@@ -1,6 +1,8 @@
+import { LaunchList } from "@/components/LaunchList";
+import { SimplifiedLaunch } from "@/types/spacex";
 import { Dispatch, SetStateAction } from "react";
 
-interface TopbarProps {
+interface MainContentProps {
   filters: {
     rocket: string;
     success: boolean | undefined;
@@ -18,43 +20,56 @@ interface TopbarProps {
     }>
   >;
   filtersData: { rockets: { id: string; name: string }[]; years: number[] };
+  launches: SimplifiedLaunch[];
   hasFilters: boolean;
+  loading: boolean;
+  error: string | null;
 }
 
-export function Topbar({ filters, setFilters, filtersData }: TopbarProps) {
+export function MainContent({
+  filters,
+  setFilters,
+  filtersData,
+  launches,
+  hasFilters,
+  loading,
+  error,
+}: MainContentProps) {
   return (
-    <header className="col-span-5 row-span-1 bg-white shadow p-5">
-      <div
-        className="
-        grid gap-3
-        grid-cols-1
-        md:grid-cols-[145px_auto_1fr] md:grid-rows-[auto_auto]
-        lg:grid-cols-[145px_auto_1fr_auto_auto_auto] lg:grid-rows-1
-      "
-      >
-        <h1 className="flex items-center justify-center lg:justify-start text-3xl font-bold">
-          SpaceX
-        </h1>
-        <h2 className="text-xl font-semibold flex items-center justify-center lg:justify-start">
-          Lanzamientos
-        </h2>
+    <main className="col-span-5 md:col-span-4 row-span-1 p-6 overflow-y-auto">
+      {loading && (
+        <p className="col-span-full text-center">Cargando lanzamientos...</p>
+      )}
 
-        <>
-          <div className="flex items-center justify-center lg:justify-end w-full">
-            <input
-              type="text"
-              placeholder="Buscar nombre de misión..."
-              className="p-2 border rounded-md w-full lg:max-w-[400px]"
-              value={filters.search}
-              onChange={(e) =>
-                setFilters({ ...filters, search: e.target.value })
-              }
-            />
-          </div>
-          <div className="md:col-span-full lg:col-span-auto grid grid-cols-1 [@media(min-width:400px)]:grid-cols-3 gap-2 lg:contents">
-            {/* Año */}
+      {error && (
+        <p className="col-span-full text-center text-red-500">
+          Error al cargar datos
+        </p>
+      )}
+
+      {/* Pantalla de bienvenida si no hay filtros */}
+      {!loading && !hasFilters && (
+        <div className="flex flex-col items-center justify-center h-full gap-6">
+          <h2 className="text-3xl font-bold text-gray-700">
+            Bienvenido a SpaceX Launches
+          </h2>
+          <p className="text-gray-500 text-lg">
+            Selecciona filtros o busca para comenzar
+          </p>
+
+          {/* Barra de búsqueda centrada */}
+          <input
+            type="text"
+            placeholder="Buscar nombre de misión..."
+            className="p-2 border rounded-md w-full max-w-xl"
+            value={filters.search}
+            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+          />
+
+          {/* Filtros centrados */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-xl">
             <select
-              className="p-2 border rounded-md w-full lg:max-w-[150px]"
+              className="p-2 border rounded-md"
               value={filters.startDate ? filters.startDate.split("-")[0] : ""}
               onChange={(e) => {
                 const year = e.target.value;
@@ -73,9 +88,8 @@ export function Topbar({ filters, setFilters, filtersData }: TopbarProps) {
               ))}
             </select>
 
-            {/* Resultado */}
             <select
-              className="p-2 border rounded-md w-full lg:max-w-[150px]"
+              className="p-2 border rounded-md"
               value={
                 filters.success === undefined
                   ? ""
@@ -98,9 +112,8 @@ export function Topbar({ filters, setFilters, filtersData }: TopbarProps) {
               <option value="false">Fallido</option>
             </select>
 
-            {/* Cohete */}
             <select
-              className="p-2 border rounded-md w-full lg:max-w-[150px]"
+              className="p-2 border rounded-md"
               value={filters.rocket}
               onChange={(e) =>
                 setFilters({ ...filters, rocket: e.target.value })
@@ -114,8 +127,18 @@ export function Topbar({ filters, setFilters, filtersData }: TopbarProps) {
               ))}
             </select>
           </div>
-        </>
-      </div>
-    </header>
+        </div>
+      )}
+
+      {/* Si hay filtros pero no resultados */}
+      {hasFilters && launches.length === 0 && !loading && (
+        <p className="col-span-full text-center text-gray-500 text-lg">
+          No se encontraron resultados para tu búsqueda.
+        </p>
+      )}
+
+      {/* Si hay lanzamientos: mostramos la lista */}
+      {launches.length > 0 && <LaunchList launches={launches} />}
+    </main>
   );
 }
