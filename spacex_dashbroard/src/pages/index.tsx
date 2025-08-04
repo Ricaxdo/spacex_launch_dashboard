@@ -32,7 +32,8 @@ export default function Home() {
     loading,
     error,
     totalPages: apiTotalPages,
-  } = useLaunches(filters, page);
+    totalDocs,
+  } = useLaunches(filters, page, 9, true);
 
   // Actualizamos totalPages cada vez que cambien los datos
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function Home() {
         page={page}
         totalPages={totalPages}
         setPage={setPage}
+        totalDocs={totalDocs}
       />
       <footer className="col-span-5 row-span-1 p-4 bg-white shadow text-center text-gray-600 border-t border-gray-200">
         © 2025 SpaceX. By Ricardo Castro

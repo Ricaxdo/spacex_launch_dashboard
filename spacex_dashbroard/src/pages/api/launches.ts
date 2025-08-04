@@ -146,6 +146,7 @@ export default async function handler(
       filtersData,
       pagination: {
         totalPages: launchesData.totalPages,
+        totalDocs: launchesData.totalDocs,
         currentPage: launchesData.page,
       },
     });

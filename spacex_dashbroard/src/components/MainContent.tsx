@@ -27,6 +27,7 @@ interface MainContentProps {
   page: number;
   totalPages: number;
   setPage: (page: number) => void;
+  totalDocs: number;
 }
 
 export function MainContent({
@@ -40,6 +41,7 @@ export function MainContent({
   page,
   totalPages,
   setPage,
+  totalDocs,
 }: MainContentProps) {
   return (
     <main className="col-span-5 md:col-span-4 row-span-1 p-6 overflow-y-auto">
@@ -150,8 +152,7 @@ export function MainContent({
 
           {/* Info de cantidad y página */}
           <p className="text-center text-sm text-gray-500 mt-4">
-            Mostrando {launches.length} lanzamientos (página {page} de{" "}
-            {totalPages})
+            Mostrando {launches.length} de {totalDocs} lanzamientos
           </p>
 
           {/* Botón de cargar más */}

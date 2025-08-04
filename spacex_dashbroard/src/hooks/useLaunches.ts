@@ -1,10 +1,11 @@
 import { FiltersData, LaunchFilters, SimplifiedLaunch } from "@/types/spacex";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useLaunches(
   filters: LaunchFilters,
   page: number = 1,
-  limit: number = 9
+  limit: number = 9,
+  requireFilters: boolean = false
 ) {
   const [launches, setLaunches] = useState<SimplifiedLaunch[]>([]);
   const [filtersData, setFiltersData] = useState<FiltersData>({
@@ -12,17 +13,30 @@ export function useLaunches(
     years: [],
   });
   const [totalPages, setTotalPages] = useState(1);
+  const [totalDocs, setTotalDocs] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Para saber si los filtros cambiaron
-  const [prevFilters, setPrevFilters] = useState(filters);
+  // Para saber si los filtros cambiaron sin necesidad de un re-render
+  const prevFiltersRef = useRef(filters);
 
   useEffect(() => {
-    // Si los filtros cambiaron, limpiamos el listado y actualizamos el estado previo
-    if (JSON.stringify(prevFilters) !== JSON.stringify(filters)) {
-      setLaunches([]); // vacía los resultados antes de cargar nuevos
-      setPrevFilters(filters);
+    const hasFilters =
+      filters.rocket ||
+      filters.success !== undefined ||
+      (filters.search && filters.search.trim() !== "") ||
+      filters.startDate ||
+      filters.endDate;
+
+    if (requireFilters && !hasFilters) {
+      setLaunches([]);
+      setTotalPages(1);
+      setTotalDocs(0);
+      return;
+    }
+
+    if (JSON.stringify(prevFiltersRef.current) !== JSON.stringify(filters)) {
+      setLaunches([]);
+      prevFiltersRef.current = filters; // actualizar ref
     }
 
     const controller = new AbortController();
@@ -30,7 +44,6 @@ export function useLaunches(
       try {
         setLoading(true);
         setError(null);
-
         // Construir URL
         const params = new URLSearchParams();
         if (filters.rocket) params.append("rocket", filters.rocket);
@@ -49,12 +62,12 @@ export function useLaunches(
         const data: {
           launches: SimplifiedLaunch[];
           filtersData: FiltersData;
-          pagination: { totalPages: number };
+          pagination: { totalPages: number; totalDocs: number };
         } = await res.json();
 
         setFiltersData(data.filtersData);
         setTotalPages(data.pagination.totalPages);
-
+        setTotalDocs(data.pagination.totalDocs);
         // Si page = 1 reiniciamos, si no acumulamos
         setLaunches((prev) =>
           page === 1 ? data.launches : [...prev, ...data.launches]
@@ -73,7 +86,7 @@ export function useLaunches(
       controller.abort();
       clearTimeout(delayDebounce);
     };
-  }, [filters, page, limit]);
+  }, [filters, page, limit, requireFilters]);
 
-  return { launches, filtersData, totalPages, loading, error };
+  return { launches, filtersData, totalPages, totalDocs, loading, error };
 }
