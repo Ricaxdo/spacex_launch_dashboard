@@ -1,8 +1,9 @@
 import type { Launch, Launchpad } from "@/types/spacex";
-import type { NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
-  res: NextApiResponse // Objeto de la respuesta (para devolver el JSON)
+  req: NextApiRequest,
+  res: NextApiResponse
 ) {
   try {
     // Pedimos los datos de lanzamientos y launchpads en paralelto
