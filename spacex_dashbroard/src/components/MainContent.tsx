@@ -24,6 +24,9 @@ interface MainContentProps {
   hasFilters: boolean;
   loading: boolean;
   error: string | null;
+  page: number;
+  totalPages: number;
+  setPage: (page: number) => void;
 }
 
 export function MainContent({
@@ -34,10 +37,13 @@ export function MainContent({
   hasFilters,
   loading,
   error,
+  page,
+  totalPages,
+  setPage,
 }: MainContentProps) {
   return (
     <main className="col-span-5 md:col-span-4 row-span-1 p-6 overflow-y-auto">
-      {loading && (
+      {loading && page === 1 && (
         <p className="col-span-full text-center">Cargando lanzamientos...</p>
       )}
 
@@ -48,7 +54,7 @@ export function MainContent({
       )}
 
       {/* Pantalla de bienvenida si no hay filtros */}
-      {!loading && !hasFilters && (
+      {!loading && !hasFilters && page === 1 && (
         <div className="flex flex-col items-center justify-center h-full gap-6">
           <h2 className="text-3xl font-bold text-gray-700">
             Bienvenido a SpaceX Launches
@@ -137,8 +143,31 @@ export function MainContent({
         </p>
       )}
 
-      {/* Si hay lanzamientos: mostramos la lista */}
-      {launches.length > 0 && <LaunchList launches={launches} />}
+      {/* Lista de lanzamientos */}
+      {launches.length > 0 && (
+        <>
+          <LaunchList launches={launches} />
+
+          {/* Info de cantidad y página */}
+          <p className="text-center text-sm text-gray-500 mt-4">
+            Mostrando {launches.length} lanzamientos (página {page} de{" "}
+            {totalPages})
+          </p>
+
+          {/* Botón de cargar más */}
+          {page < totalPages && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => setPage(page + 1)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                disabled={loading}
+              >
+                {loading ? "Cargando..." : "Cargar más"}
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </main>
   );
 }
