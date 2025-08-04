@@ -1,36 +1,29 @@
-import { SimplifiedLaunch } from "@/types/spacex";
+import { FiltersData, LaunchFilters, SimplifiedLaunch } from "@/types/spacex";
 import { useEffect, useState } from "react";
 
-interface LaunchFilters {
-  rocket?: string;
-  success?: boolean;
-  search?: string;
-  startDate?: string;
-  endDate?: string;
-}
-
-interface FiltersData {
-  rockets: { id: string; name: string }[];
-  years: number[];
-}
-
-export function useLaunches(filters: LaunchFilters) {
+export function useLaunches(
+  filters: LaunchFilters,
+  page: number = 1,
+  limit: number = 9
+) {
   const [launches, setLaunches] = useState<SimplifiedLaunch[]>([]);
   const [filtersData, setFiltersData] = useState<FiltersData>({
     rockets: [],
     years: [],
   });
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Para saber si los filtros cambiaron
+  const [prevFilters, setPrevFilters] = useState(filters);
+
   useEffect(() => {
-    const hasFilters =
-      filters.rocket ||
-      filters.success === true ||
-      filters.success === false ||
-      (filters.search && filters.search.trim() !== "") ||
-      filters.startDate ||
-      filters.endDate;
+    // Si los filtros cambiaron, limpiamos el listado y actualizamos el estado previo
+    if (JSON.stringify(prevFilters) !== JSON.stringify(filters)) {
+      setLaunches([]); // vacía los resultados antes de cargar nuevos
+      setPrevFilters(filters);
+    }
 
     const controller = new AbortController();
     const delayDebounce = setTimeout(async () => {
@@ -38,7 +31,7 @@ export function useLaunches(filters: LaunchFilters) {
         setLoading(true);
         setError(null);
 
-        // Construir la URL con los filtros
+        // Construir URL
         const params = new URLSearchParams();
         if (filters.rocket) params.append("rocket", filters.rocket);
         if (filters.success !== undefined)
@@ -46,17 +39,26 @@ export function useLaunches(filters: LaunchFilters) {
         if (filters.search) params.append("search", filters.search);
         if (filters.startDate) params.append("startDate", filters.startDate);
         if (filters.endDate) params.append("endDate", filters.endDate);
+        params.append("page", page.toString());
+        params.append("limit", limit.toString());
 
         const url = `/api/launches?${params.toString()}`;
         const res = await fetch(url, { signal: controller.signal });
         if (!res.ok) throw new Error("Error al cargar datos");
 
-        const data: { launches: SimplifiedLaunch[]; filtersData: FiltersData } =
-          await res.json();
+        const data: {
+          launches: SimplifiedLaunch[];
+          filtersData: FiltersData;
+          pagination: { totalPages: number };
+        } = await res.json();
 
-        // Guardamos lanzamientos y data para los selects
-        setLaunches(hasFilters ? data.launches : []);
         setFiltersData(data.filtersData);
+        setTotalPages(data.pagination.totalPages);
+
+        // Si page = 1 reiniciamos, si no acumulamos
+        setLaunches((prev) =>
+          page === 1 ? data.launches : [...prev, ...data.launches]
+        );
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
           console.error(err);
@@ -65,13 +67,13 @@ export function useLaunches(filters: LaunchFilters) {
       } finally {
         setLoading(false);
       }
-    }, 500); // Debounce: 500ms
+    }, 300);
 
     return () => {
       controller.abort();
       clearTimeout(delayDebounce);
     };
-  }, [filters]);
+  }, [filters, page, limit]);
 
-  return { launches, filtersData, loading, error };
+  return { launches, filtersData, totalPages, loading, error };
 }

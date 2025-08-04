@@ -1,6 +1,6 @@
 export interface LaunchQuery {
   rocket?: string;
-  success?: boolean;
+  success?: boolean | { $ne: boolean };
   $text?: { $search: string };
   date_utc?: { $gte?: string; $lte?: string };
 }
@@ -35,4 +35,17 @@ export interface SimplifiedLaunch {
     locality: string;
     region: string;
   };
+}
+
+export interface LaunchFilters {
+  rocket?: string;
+  success?: boolean;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface FiltersData {
+  rockets: { id: string; name: string }[];
+  years: number[];
 }

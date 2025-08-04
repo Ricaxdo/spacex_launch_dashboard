@@ -4,7 +4,7 @@ import { format } from "date-fns";
 export function LaunchCard({ launch }: { launch: SimplifiedLaunch }) {
   return (
     <div className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition self-start h-full flex flex-col">
-      <h2 className="font-bold text-lg text-black flex-1">{launch.name}</h2>
+      <h2 className="font-bold text-xl text-black flex-1">{launch.name}</h2>
       <div className="flex-1">
         <p className="text-gray-600">
           Fecha: {format(new Date(launch.date), "dd/MM/yyyy")}

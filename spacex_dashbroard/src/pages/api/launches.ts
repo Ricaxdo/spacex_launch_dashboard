@@ -11,12 +11,16 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const { rocket, success, search, startDate, endDate } = req.query;
+    const { rocket, success, search, startDate, endDate, page, limit } =
+      req.query;
 
-    // Construcción dinámica del query para launches filtrados
+    // Construcción dinámica del query
     const query: LaunchQuery = {};
     if (rocket) query.rocket = rocket as string;
-    if (success !== undefined) query.success = success === "true";
+    if (success !== undefined) {
+      query.success = success === "true" ? true : { $ne: true };
+    }
+
     if (search) query.$text = { $search: search as string };
     if (startDate || endDate) {
       query.date_utc = {};
@@ -24,14 +28,15 @@ export default async function handler(
       if (endDate) query.date_utc.$lte = endDate as string;
     }
 
-    // Opciones: solo campos necesarios + orden descendente por fecha
+    // Opciones con paginación activada
     const options = {
       sort: { date_utc: "desc" },
       select: ["id", "name", "date_utc", "success", "launchpad", "rocket"],
-      pagination: false, // Cambiar a sistema de paginación si es necesario
+      pagination: true,
+      page: page ? parseInt(page as string, 10) : 1, // página actual
+      limit: limit ? parseInt(limit as string, 10) : 9, // por defecto 9 por página
     };
 
-    // Llamadas en paralelo: launches filtrados, launchpads, rockets y todos los launches para años
     const [launchesRes, padsRes, rocketsRes, allLaunchesRes] =
       await Promise.all([
         fetch("https://api.spacexdata.com/v4/launches/query", {
@@ -60,7 +65,7 @@ export default async function handler(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             query: {},
-            options: { select: ["date_utc"], pagination: false }, // Solo fechas para todos
+            options: { select: ["date_utc"], pagination: false },
           }),
         }),
       ]);
@@ -68,7 +73,13 @@ export default async function handler(
     if (!launchesRes.ok || !padsRes.ok || !rocketsRes.ok || !allLaunchesRes.ok)
       throw new Error("Error al consultar SpaceX API");
 
-    const launchesData: { docs: LaunchResponse[] } = await launchesRes.json();
+    const launchesData: {
+      docs: LaunchResponse[];
+      totalPages: number;
+      page: number;
+      totalDocs?: number;
+    } = await launchesRes.json();
+
     const launchpadsData: { docs: LaunchpadResponse[] } = await padsRes.json();
     const rocketsData: { docs: { id: string; name: string }[] } =
       await rocketsRes.json();
@@ -113,12 +124,11 @@ export default async function handler(
       })
     );
 
-    // Filtros para selects: rockets y todos los años
+    // Filtros para selects
     const allRockets = rocketsData.docs.map((rocket) => ({
       id: rocket.id,
       name: rocket.name,
     }));
-
     const allYears = new Set<number>();
     allLaunchesData.docs.forEach((l) => {
       const year = new Date(l.date_utc).getFullYear();
@@ -130,8 +140,15 @@ export default async function handler(
       years: Array.from(allYears).sort((a, b) => b - a),
     };
 
-    // Devolvemos ambos: lanzamientos filtrados + data para filtros
-    res.status(200).json({ launches: simplifiedLaunches, filtersData });
+    // Incluimos info de paginación
+    res.status(200).json({
+      launches: simplifiedLaunches,
+      filtersData,
+      pagination: {
+        totalPages: launchesData.totalPages,
+        currentPage: launchesData.page,
+      },
+    });
   } catch (error) {
     console.error(error, "> Error al obtener datos");
     res.status(500).json({ error: "Error al obtener datos de SpaceX" });
