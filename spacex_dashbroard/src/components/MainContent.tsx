@@ -40,8 +40,10 @@ export function MainContent({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-xl">
             {/* Año */}
             <select
-              className="p-2 border rounded-md w-full max-h-40 overflow-y-auto"
-              size={2} // Muestra 6 años visibles, luego scroll
+              className={`p-2 border rounded-md w-full max-h-40 overflow-y-auto ${
+                filters.startDate ? "text-black" : "text-gray-500"
+              }`}
+              size={2} // Muestra 2 visibles, luego scroll
               value={filters.startDate ? filters.startDate.split("-")[0] : ""}
               onChange={(e) => {
                 const year = e.target.value;
@@ -52,7 +54,7 @@ export function MainContent({
                 });
               }}
             >
-              <option value="">Año</option>
+              <option value="">Seleccionar año</option>
               {filtersData.years.map((year) => (
                 <option key={year} value={year}>
                   {year}
@@ -62,7 +64,9 @@ export function MainContent({
 
             {/* Resultado */}
             <select
-              className="p-2 border rounded-md w-full"
+              className={`p-2 border rounded-md w-full ${
+                filters.success === undefined ? "text-gray-500" : "text-black"
+              }`}
               value={
                 filters.success === undefined
                   ? ""
@@ -80,20 +84,26 @@ export function MainContent({
                 })
               }
             >
-              <option value="">Resultado</option>
+              <option value="" disabled>
+                Resultado
+              </option>
               <option value="true">Exitoso</option>
               <option value="false">Fallido</option>
             </select>
 
             {/* Cohete */}
             <select
-              className="p-2 border rounded-md w-full"
+              className={`p-2 border rounded-md w-full ${
+                filters.rocket === "" ? "text-gray-500" : "text-black"
+              }`}
               value={filters.rocket}
               onChange={(e) =>
                 setFilters({ ...filters, rocket: e.target.value })
               }
             >
-              <option value="">Cohete</option>
+              <option value="" disabled>
+                Cohete
+              </option>
               {filtersData.rockets.map((rocket) => (
                 <option key={rocket.id} value={rocket.id}>
                   {rocket.name}

@@ -46,9 +46,12 @@ export function Header({
           <input
             type="text"
             placeholder="Buscar nombre de misión..."
-            className={`border rounded-md w-full transition-all h-full px-4 ${
-              hasFilters ? "lg:max-w-[500px]" : "max-w-xl text-center text-lg"
-            }`}
+            className={`border rounded-md w-full transition-all h-full px-4 
+              ${
+                hasFilters ? "lg:max-w-[500px]" : "max-w-xl text-center text-lg"
+              } 
+              ${filters.search ? "border-orange-500" : "border-gray-300"}
+              focus:border-orange-500 focus:ring-2 focus:ring-orange-300 focus:outline-none`}
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
           />
@@ -57,8 +60,13 @@ export function Header({
         {/* Filtros solo visibles si hay búsqueda o filtros */}
         {hasFilters && (
           <div className="md:col-span-full lg:col-span-auto grid grid-cols-1 [@media(min-width:400px)]:grid-cols-3 gap-2 lg:contents">
+            {/* Año */}
             <select
-              className="p-2 border rounded-md w-full lg:max-w-[150px]"
+              className={`p-2 border rounded-md w-full lg:max-w-[150px] ${
+                filters.startDate
+                  ? "border-orange-500 text-black"
+                  : "text-gray-500 border-gray-300"
+              } focus:border-orange-500 focus:ring-2 focus:ring-orange-300 focus:outline-none`}
               value={filters.startDate ? filters.startDate.split("-")[0] : ""}
               onChange={(e) => {
                 const year = e.target.value;
@@ -77,8 +85,13 @@ export function Header({
               ))}
             </select>
 
+            {/* Resultado */}
             <select
-              className="p-2 border rounded-md w-full lg:max-w-[150px]"
+              className={`p-2 border rounded-md w-full lg:max-w-[150px] ${
+                filters.success !== undefined
+                  ? "border-orange-500 text-black"
+                  : "text-gray-500 border-gray-300"
+              } focus:border-orange-500 focus:ring-2 focus:ring-orange-300 focus:outline-none`}
               value={
                 filters.success === undefined
                   ? ""
@@ -101,8 +114,15 @@ export function Header({
               <option value="false">Fallido</option>
             </select>
 
+            {/* Cohete */}
             <select
-              className="p-2 border rounded-md w-full lg:max-w-[150px]"
+              className={`p-2 border rounded-md w-full lg:max-w-[150px] 
+    ${
+      filters.rocket
+        ? "border-orange-500 text-black"
+        : "border-gray-300 text-gray-500"
+    }
+    focus:border-orange-500 focus:ring-2 focus:ring-orange-300 focus:outline-none`}
               value={filters.rocket}
               onChange={(e) =>
                 setFilters({ ...filters, rocket: e.target.value })
