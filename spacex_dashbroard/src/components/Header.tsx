@@ -23,7 +23,11 @@ export function Header({
           SpaceX
         </h1>
         <h2 className="text-xl font-semibold flex items-center justify-center lg:justify-start">
-          {activeView === "favorites" ? "Favoritos" : "Lanzamientos"}
+          {activeView === "favorites"
+            ? "Favoritos"
+            : activeView === "map"
+            ? "Mapas"
+            : "Lanzamientos"}
         </h2>
 
         {/* Barra de búsqueda */}

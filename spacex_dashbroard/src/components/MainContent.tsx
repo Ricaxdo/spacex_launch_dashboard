@@ -1,5 +1,7 @@
 import { LaunchList } from "@/components/LaunchList";
 import { MainContentProps } from "@/types/spacex";
+import { useState } from "react";
+import { FaSpinner } from "react-icons/fa";
 
 export function MainContent({
   filters,
@@ -16,6 +18,7 @@ export function MainContent({
   onFeedback,
   onSelectLaunch,
 }: MainContentProps) {
+  const [hasSearched, setHasSearched] = useState(false);
   return (
     <main
       className="col-span-5 md:col-span-4 row-span-1 p-6 
@@ -23,7 +26,9 @@ export function MainContent({
   overflow-y-visible"
     >
       {loading && page === 1 && (
-        <p className="col-span-full text-center">Cargando lanzamientos...</p>
+        <div className="flex justify-center items-center h-100">
+          <FaSpinner className="animate-spin text-orange-500" size={45} />
+        </div>
       )}
 
       {error && (
@@ -46,10 +51,9 @@ export function MainContent({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-xl">
             {/* Año */}
             <select
-              className={`p-2 border rounded-md w-full max-h-40 overflow-y-auto ${
+              className={`p-2 border rounded-md w-full max-h-30 overflow-y-auto ${
                 filters.startDate ? "text-black" : "text-gray-500"
               }`}
-              size={2} // Muestra 2 visibles, luego scroll
               value={filters.startDate ? filters.startDate.split("-")[0] : ""}
               onChange={(e) => {
                 const year = e.target.value;
@@ -120,8 +124,7 @@ export function MainContent({
         </div>
       )}
 
-      {/* Si hay filtros pero no resultados */}
-      {hasFilters && launches.length === 0 && !loading && (
+      {hasFilters && hasSearched && !loading && launches.length === 0 && (
         <p className="col-span-full text-center text-gray-500 text-lg">
           No se encontraron resultados para tu búsqueda.
         </p>
