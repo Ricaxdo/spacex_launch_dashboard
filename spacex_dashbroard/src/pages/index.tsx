@@ -1,5 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // Componentes
 import { FavoritesContent } from "@/components/FavoriteContent";
@@ -84,6 +84,10 @@ export default function Home() {
     setPage(1);
   }, [launchFilters]);
 
+  const handleCloseFeedback = useCallback(() => {
+    setFeedback(null);
+  }, []);
+
   const hasFilters = (filters: typeof launchFilters) =>
     !!(
       filters.rocket ||
@@ -155,7 +159,6 @@ export default function Home() {
       {activeView === "favorites" && (
         <FavoritesContent
           favorites={filteredFavorites}
-          filters={favoriteFilters}
           onFeedback={setFeedback}
         />
       )}
@@ -173,7 +176,7 @@ export default function Home() {
       </footer>
 
       {feedback && (
-        <FeedbackModal message={feedback} onClose={() => setFeedback(null)} />
+        <FeedbackModal message={feedback} onClose={handleCloseFeedback} />
       )}
     </div>
   );

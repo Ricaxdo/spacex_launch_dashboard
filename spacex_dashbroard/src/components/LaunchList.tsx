@@ -11,7 +11,7 @@ export function LaunchList({
   onSelectLaunch?: (id: string) => void; // <-- NUEVO
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 xl:auto-rows-[260px] overflow-y-auto">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 xl:auto-rows-[240px] overflow-y-auto">
       {launches.map((launch) => (
         <LaunchCard
           key={launch.id}

@@ -1,15 +1,13 @@
 import { LaunchCard } from "@/components/LaunchCard";
-import { Filters, SimplifiedLaunch } from "@/types/spacex";
+import { SimplifiedLaunch } from "@/types/spacex";
 
 interface FavoritesContentProps {
   favorites: SimplifiedLaunch[];
-  filters: Filters;
   onFeedback: (msg: string) => void;
 }
 
 export function FavoritesContent({
   favorites,
-  filters,
   onFeedback,
 }: FavoritesContentProps) {
   return (
