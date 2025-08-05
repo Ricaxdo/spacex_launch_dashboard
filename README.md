@@ -44,8 +44,27 @@ Permite ver detalles, ubicaciones en Google Maps, buscar misiones y guardar favo
    # o
    yarn dev
 
+## Docker (opcional)
+    ```bash
+    docker build -t spacex-dashboard .
+    docker run -p 3000:3000 spacex-dashboard
 
-## Docker(opcional)
+---
 
-docker build -t spacex-dashboard .
-docker run -p 3000:3000 spacex-dashboard
+## Instrucciones de uso
+
+1. Explorar views
+   Al entrar a la web directamente podras buscar lanzamientos, podras checar tus lanzamientos favoritos y un mapa interactivo en un sidebar
+
+2. Filtrar lanzamientos
+   Utiliza los filtros para encontrar lanzamientos:
+   Nombre de mision, Resultado, Cohete, Año
+
+3. Gestionar lanzamientos favoritos
+   Agrega tus lanzamientos favoritos con el icono 'like' para crear tu lista personal
+   Accede a la seccion y ve detalles sobre ellos
+   Elimina lanzamientos en cualquier momentos
+
+4. Visualizacion en el mapa
+   Accede a la ubicacion de cada lanzamientos con el icono 'maps'
+   Haz clic en un marcador para ver su informacion
