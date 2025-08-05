@@ -13,6 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export default function Home() {
+  const [activeView, setActiveView] = useState<"launches" | "favorites">(
+    "launches"
+  );
   // Estado para filtros dinámicos
   const [filters, setFilters] = useState({
     rocket: "",
@@ -63,20 +66,29 @@ export default function Home() {
         filtersData={filtersData}
         hasFilters={hasFilters}
       />
-      <Sidebar />
-      <MainContent
-        filters={filters}
-        setFilters={setFilters}
-        filtersData={filtersData}
-        launches={launches}
-        hasFilters={hasFilters}
-        loading={loading}
-        error={error}
-        page={page}
-        totalPages={totalPages}
-        setPage={setPage}
-        totalDocs={totalDocs}
-      />
+      <Sidebar activeView={activeView} setActiveView={setActiveView} />
+      {activeView === "launches" && (
+        <MainContent
+          filters={filters}
+          setFilters={setFilters}
+          filtersData={filtersData}
+          launches={launches}
+          hasFilters={hasFilters}
+          loading={loading}
+          error={error}
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
+          totalDocs={totalDocs}
+        />
+      )}
+
+      {activeView === "favorites" && (
+        <div className="col-span-5 md:col-span-4 p-6">
+          <h2 className="text-2xl font-bold mb-4">Favoritos</h2>
+        </div>
+      )}
+
       <footer className="col-span-5 row-span-1 p-4 bg-white shadow text-center text-gray-600 border-t border-gray-200">
         © 2025 SpaceX. By Ricardo Castro
       </footer>

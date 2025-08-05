@@ -18,7 +18,7 @@ export function LaunchCard({ launch }: { launch: SimplifiedLaunch }) {
           {launch.launchpad.region})
         </p>
       </div>
-      <button className="mt-3 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+      <button className="mt-3 bg-blue-500 text-white px-3 py-1 rounded-xl hover:bg-blue-600">
         Agregar a favoritos
       </button>
     </div>
