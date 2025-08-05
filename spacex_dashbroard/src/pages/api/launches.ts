@@ -49,7 +49,16 @@ export default async function handler(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             query: {},
-            options: { select: ["id", "name", "locality", "region"] },
+            options: {
+              select: [
+                "id",
+                "name",
+                "locality",
+                "region",
+                "latitude",
+                "longitude",
+              ],
+            },
           }),
         }),
         fetch("https://api.spacexdata.com/v4/rockets/query", {
@@ -88,13 +97,21 @@ export default async function handler(
     // Mapeo de launchpads
     const padsMap: Record<
       string,
-      { name: string; locality: string; region: string }
+      {
+        name: string;
+        locality: string;
+        region: string;
+        latitude: number;
+        longitude: number;
+      }
     > = {};
     launchpadsData.docs.forEach((pad) => {
       padsMap[pad.id] = {
         name: pad.name,
         locality: pad.locality,
         region: pad.region,
+        latitude: pad.latitude,
+        longitude: pad.longitude,
       };
     });
 
@@ -117,6 +134,8 @@ export default async function handler(
           name: "Desconocido",
           locality: "",
           region: "",
+          latitude: 0,
+          longitude: 0,
         },
       })
     );

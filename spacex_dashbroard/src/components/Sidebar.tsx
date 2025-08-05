@@ -24,6 +24,16 @@ export function Sidebar({ activeView, setActiveView }: SidebarProps) {
         >
           Favoritos
         </button>
+        <button
+          onClick={() => setActiveView("map")}
+          className={`p-2 rounded-xl text-center md:text-left ${
+            activeView === "map"
+              ? "bg-orange-200 font-semibold"
+              : "hover:bg-gray-100"
+          }`}
+        >
+          Mapa
+        </button>
       </nav>
     </aside>
   );

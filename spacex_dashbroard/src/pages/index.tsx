@@ -6,6 +6,7 @@ import { FavoritesContent } from "@/components/FavoriteContent";
 import { FeedbackModal } from "@/components/FeedbackModal";
 import { Header } from "@/components/Header";
 import { MainContent } from "@/components/MainContent";
+import { MapView } from "@/components/MapContent";
 import { Sidebar } from "@/components/Sidebar";
 
 //Hooks
@@ -23,9 +24,9 @@ const geistMono = Geist_Mono({
 });
 
 export default function Home() {
-  const [activeView, setActiveView] = useState<"launches" | "favorites">(
-    "launches"
-  );
+  const [activeView, setActiveView] = useState<
+    "launches" | "favorites" | "map"
+  >("launches");
   const [feedback, setFeedback] = useState<string | null>(null);
   const { favorites } = useFavorites();
 
@@ -132,6 +133,8 @@ export default function Home() {
           onFeedback={setFeedback}
         />
       )}
+
+      {activeView === "map" && <MapView launches={launches} />}
 
       <footer className="col-span-5 row-span-1 p-4 bg-white shadow text-center text-gray-600 border-t border-gray-200">
         © 2025 SpaceX. By Ricardo Castro

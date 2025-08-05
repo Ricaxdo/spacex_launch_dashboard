@@ -9,7 +9,7 @@ export function Header({
   activeView,
 }: HeaderProps & {
   alwaysShowFilters?: boolean;
-  activeView?: "launches" | "favorites";
+  activeView?: "launches" | "favorites" | "map";
 }) {
   const showFilters = hasFilters || alwaysShowFilters;
 

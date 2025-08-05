@@ -22,6 +22,8 @@ export interface LaunchpadResponse {
   name: string;
   locality: string;
   region: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface SimplifiedLaunch {
@@ -37,6 +39,8 @@ export interface SimplifiedLaunch {
     name: string;
     locality: string;
     region: string;
+    latitude: number;
+    longitude: number;
   };
 }
 
@@ -102,6 +106,7 @@ export interface HeaderProps {
   filtersData: { rockets: { id: string; name: string }[]; years: number[] };
   hasFilters: boolean;
   alwaysShowFilters?: boolean;
+  activeView?: "launches" | "favorites" | "map";
 }
 
 export interface Filters {
@@ -113,6 +118,6 @@ export interface Filters {
 }
 
 export interface SidebarProps {
-  activeView: "launches" | "favorites";
-  setActiveView: (view: "launches" | "favorites") => void;
+  activeView: "launches" | "favorites" | "map";
+  setActiveView: (view: "launches" | "favorites" | "map") => void;
 }
