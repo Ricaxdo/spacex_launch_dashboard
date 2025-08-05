@@ -1,35 +1,150 @@
-import type { Launch, Launchpad } from "@/types/spacex";
-import type { NextApiResponse } from "next";
+import type {
+  LaunchQuery,
+  LaunchResponse,
+  LaunchpadResponse,
+  SimplifiedLaunch,
+} from "@/types/spacex";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
-  res: NextApiResponse // Objeto de la respuesta (para devolver el JSON)
+  req: NextApiRequest,
+  res: NextApiResponse
 ) {
   try {
-    // Pedimos los datos de lanzamientos y launchpads en paralelto
-    const [launchesRes, padsRes] = await Promise.all([
-      fetch("https://api.spacexdata.com/v4/launches"),
-      fetch("https://api.spacexdata.com/v4/launchpads"),
-    ]);
+    const { rocket, success, search, startDate, endDate, page, limit } =
+      req.query;
 
-    const launches: Launch[] = await launchesRes.json();
-    const launchpads: Launchpad[] = await padsRes.json();
+    // Construcción dinámica del query
+    const query: LaunchQuery = {};
+    if (rocket) query.rocket = rocket as string;
+    if (success !== undefined) {
+      query.success = success === "true" ? true : { $ne: true };
+    }
+    // Busqueda de texto con regex
+    if (search) query.name = { $regex: search as string, $options: "i" };
 
-    // Mapeamos para traducir el ID del launchpad a su nombre
-    const padsMap: Record<string, string> = {};
-    launchpads.forEach((pad) => {
-      padsMap[pad.id] = pad.name;
+    if (startDate || endDate) {
+      query.date_utc = {};
+      if (startDate) query.date_utc.$gte = startDate as string;
+      if (endDate) query.date_utc.$lte = endDate as string;
+    }
+    // Opciones con paginación activada
+    const options = {
+      sort: { date_utc: "desc" },
+      select: ["id", "name", "date_utc", "success", "launchpad", "rocket"],
+      pagination: true,
+      page: page ? parseInt(page as string, 10) : 1,
+      limit: limit ? parseInt(limit as string, 10) : 9,
+    };
+
+    const [launchesRes, padsRes, rocketsRes, allLaunchesRes] =
+      await Promise.all([
+        fetch("https://api.spacexdata.com/v4/launches/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, options }),
+        }),
+        fetch("https://api.spacexdata.com/v4/launchpads/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: {},
+            options: { select: ["id", "name", "locality", "region"] },
+          }),
+        }),
+        fetch("https://api.spacexdata.com/v4/rockets/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: {},
+            options: { select: ["id", "name"] },
+          }),
+        }),
+        fetch("https://api.spacexdata.com/v4/launches/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: {},
+            options: { select: ["date_utc"], pagination: false },
+          }),
+        }),
+      ]);
+
+    if (!launchesRes.ok || !padsRes.ok || !rocketsRes.ok || !allLaunchesRes.ok)
+      throw new Error("Error al consultar SpaceX API");
+
+    const launchesData: {
+      docs: LaunchResponse[];
+      totalPages: number;
+      page: number;
+      totalDocs?: number;
+    } = await launchesRes.json();
+
+    const launchpadsData: { docs: LaunchpadResponse[] } = await padsRes.json();
+    const rocketsData: { docs: { id: string; name: string }[] } =
+      await rocketsRes.json();
+    const allLaunchesData: { docs: { date_utc: string }[] } =
+      await allLaunchesRes.json();
+    // Mapeo de launchpads
+    const padsMap: Record<
+      string,
+      { name: string; locality: string; region: string }
+    > = {};
+    launchpadsData.docs.forEach((pad) => {
+      padsMap[pad.id] = {
+        name: pad.name,
+        locality: pad.locality,
+        region: pad.region,
+      };
     });
 
-    // Transformamos la data en una versión simplificada
-    const simplifiedLaunches = launches.map((launch) => ({
-      id: launch.id,
-      name: launch.name,
-      date: launch.date_utc,
-      success: launch.success,
-      launchpad: padsMap[launch.launchpad] || "Desconocido", // Buscamos el nombre del launchpad
+    const rocketsMap: Record<string, { id: string; name: string }> = {};
+    rocketsData.docs.forEach((rocket) => {
+      rocketsMap[rocket.id] = { id: rocket.id, name: rocket.name };
+    });
+    // Simplificamos los lanzamientos filtrados
+    const simplifiedLaunches: SimplifiedLaunch[] = launchesData.docs.map(
+      (launch) => ({
+        id: launch.id,
+        name: launch.name,
+        date: launch.date_utc,
+        success: launch.success,
+        rocket: rocketsMap[launch.rocket] || {
+          id: launch.rocket,
+          name: "Desconocido",
+        },
+        launchpad: padsMap[launch.launchpad] || {
+          name: "Desconocido",
+          locality: "",
+          region: "",
+        },
+      })
+    );
+    // Filtros para selects
+    const allRockets = rocketsData.docs.map((rocket) => ({
+      id: rocket.id,
+      name: rocket.name,
     }));
+    const allYears = new Set<number>();
+    allLaunchesData.docs.forEach((l) => {
+      const year = new Date(l.date_utc).getFullYear();
+      allYears.add(year);
+    });
 
-    res.status(200).json(simplifiedLaunches);
+    const filtersData = {
+      rockets: allRockets,
+      years: Array.from(allYears).sort((a, b) => b - a),
+    };
+    // Incluimos info de paginación
+    res.status(200).json({
+      launches: simplifiedLaunches,
+      filtersData,
+      pagination: {
+        totalPages: launchesData.totalPages,
+        totalDocs: launchesData.totalDocs,
+        currentPage: launchesData.page,
+      },
+    });
   } catch (error) {
     console.error(error, "> Error al obtener datos");
     res.status(500).json({ error: "Error al obtener datos de SpaceX" });
