@@ -41,7 +41,7 @@ Permite ver detalles, ubicaciones en Google Maps, buscar misiones y guardar favo
 3. Configurar tu API key de Google Maps
 
    ```bash
-   Renombra .env.local a .env y agrega tu clave:
+   Al .env y agrega tu clave:
    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=tu_clave_aqui
 
    ```
