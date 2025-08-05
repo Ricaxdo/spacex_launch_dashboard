@@ -13,9 +13,15 @@ export function MainContent({
   totalPages,
   setPage,
   totalDocs,
+  onFeedback,
+  onSelectLaunch,
 }: MainContentProps) {
   return (
-    <main className="col-span-5 md:col-span-4 row-span-1 p-6 overflow-y-auto">
+    <main
+      className="col-span-5 md:col-span-4 row-span-1 p-6 
+  md:overflow-y-auto md:h-full 
+  overflow-y-visible"
+    >
       {loading && page === 1 && (
         <p className="col-span-full text-center">Cargando lanzamientos...</p>
       )}
@@ -124,7 +130,11 @@ export function MainContent({
       {/* Lista de lanzamientos */}
       {launches.length > 0 && (
         <>
-          <LaunchList launches={launches} />
+          <LaunchList
+            launches={launches}
+            onFeedback={onFeedback}
+            onSelectLaunch={onSelectLaunch}
+          />
 
           {/* Info de cantidad y página */}
           <p className="text-center text-sm text-gray-500 mt-4">

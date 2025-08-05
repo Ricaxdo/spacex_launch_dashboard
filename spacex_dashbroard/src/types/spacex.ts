@@ -1,11 +1,14 @@
 import { Dispatch, SetStateAction } from "react";
 
 export interface LaunchQuery {
+  _id?: string; // <-- Agregado para búsqueda directa por id
   rocket?: string;
-  success?: boolean | { $ne: boolean };
-  $text?: { $search: string };
-  name?: { $regex: string; $options?: string };
-  date_utc?: { $gte?: string; $lte?: string };
+  success?: boolean | { $ne: true };
+  name?: { $regex: string; $options: string };
+  date_utc?: {
+    $gte?: string;
+    $lte?: string;
+  };
 }
 
 export interface LaunchResponse {
@@ -22,6 +25,8 @@ export interface LaunchpadResponse {
   name: string;
   locality: string;
   region: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface SimplifiedLaunch {
@@ -37,12 +42,14 @@ export interface SimplifiedLaunch {
     name: string;
     locality: string;
     region: string;
+    latitude: number;
+    longitude: number;
   };
 }
 
 export interface LaunchFilters {
   rocket?: string;
-  success?: boolean;
+  success: boolean | null | undefined;
   search?: string;
   startDate?: string;
   endDate?: string;
@@ -79,4 +86,50 @@ export interface MainContentProps {
   totalPages: number;
   setPage: (page: number) => void;
   totalDocs: number;
+  onFeedback?: (msg: string) => void;
+  onSelectLaunch?: (id: string) => void;
+}
+
+export interface HeaderProps {
+  filters: {
+    rocket: string;
+    success: boolean | undefined;
+    search: string;
+    startDate: string;
+    endDate: string;
+  };
+  setFilters: Dispatch<
+    SetStateAction<{
+      rocket: string;
+      success: boolean | undefined;
+      search: string;
+      startDate: string;
+      endDate: string;
+    }>
+  >;
+  filtersData: { rockets: { id: string; name: string }[]; years: number[] };
+  hasFilters: boolean;
+  alwaysShowFilters?: boolean;
+  activeView?: "launches" | "favorites" | "map";
+  showFilters?: boolean;
+}
+
+export interface Filters {
+  rocket: string;
+  success: boolean | undefined;
+  search: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface SidebarProps {
+  activeView: "launches" | "favorites" | "map";
+  setActiveView: (view: "launches" | "favorites" | "map") => void;
+}
+
+export interface LaunchCardProps {
+  launch: SimplifiedLaunch;
+  isFavoriteView?: boolean;
+  onFeedback?: (msg: string) => void;
+  onSelectLaunch?: (id: string) => void;
 }
