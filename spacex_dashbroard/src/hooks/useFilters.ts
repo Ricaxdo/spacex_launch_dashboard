@@ -10,6 +10,7 @@ export function useFilters() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Llama a la API local para obtener filtros iniciales al montar
     const fetchFilters = async () => {
       try {
         setLoading(true);

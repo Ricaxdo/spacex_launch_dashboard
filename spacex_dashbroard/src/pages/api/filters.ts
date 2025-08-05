@@ -5,6 +5,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
+    // Pedimos cohetes y lanzamientos en paralelo
     const [rocketsRes, launchesRes] = await Promise.all([
       fetch("https://api.spacexdata.com/v4/rockets/query", {
         method: "POST",
@@ -46,6 +47,7 @@ export default async function handler(
       yearsSet.add(new Date(l.date_utc).getFullYear());
     });
 
+    // Respuesta con filtros para el frontend
     res.status(200).json({
       rockets: filteredRockets,
       years: Array.from(yearsSet).sort((a, b) => b - a),

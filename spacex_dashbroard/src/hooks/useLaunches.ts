@@ -6,7 +6,7 @@ export function useLaunches(
   page: number = 1,
   limit: number = 9,
   requireFilters: boolean = false,
-  disablePagination: boolean = false // <-- Nuevo parámetro
+  disablePagination: boolean = false // Permite traer todos los resultados de una vez
 ) {
   const [launches, setLaunches] = useState<SimplifiedLaunch[]>([]);
   const [filtersData, setFiltersData] = useState<FiltersData>({
@@ -17,29 +17,31 @@ export function useLaunches(
   const [totalDocs, setTotalDocs] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const prevFiltersRef = useRef(filters);
+  const prevFiltersRef = useRef(filters); // Para comparar cambios de filtros
 
   useEffect(() => {
+    // Valida si hay algún filtro aplicado (para evitar consultas vacías)
     const hasFilters =
       filters.rocket ||
       filters.success !== undefined ||
       (filters.search && filters.search.trim() !== "") ||
       filters.startDate ||
       filters.endDate;
-
+    // Si requireFilters es true y no hay filtros, limpia resultados y termina
     if (requireFilters && !hasFilters) {
       setLaunches([]);
       setTotalPages(1);
       setTotalDocs(0);
       return;
     }
-
+    // Si los filtros cambiaron, resetea lanzamientos
     if (JSON.stringify(prevFiltersRef.current) !== JSON.stringify(filters)) {
       setLaunches([]);
       prevFiltersRef.current = filters;
     }
 
     const controller = new AbortController();
+    // Debounce de 400ms para evitar spamear requests al escribir filtros
     const delayDebounce = setTimeout(async () => {
       try {
         setLoading(true);
@@ -52,7 +54,7 @@ export function useLaunches(
         if (filters.search) params.append("search", filters.search);
         if (filters.startDate) params.append("startDate", filters.startDate);
         if (filters.endDate) params.append("endDate", filters.endDate);
-
+        // Si hay paginación, agrega los params; si no, pide todo
         if (!disablePagination) {
           params.append("page", page.toString());
           params.append("limit", limit.toString());
@@ -83,7 +85,7 @@ export function useLaunches(
         setFiltersData(data.filtersData);
         setTotalPages(data.pagination.totalPages);
         setTotalDocs(data.pagination.totalDocs);
-
+        // Si es página 1 (o sin paginación), reemplaza; si no, concatena (scroll infinito)
         setLaunches((prev) =>
           page === 1 || disablePagination
             ? data.launches
@@ -98,7 +100,7 @@ export function useLaunches(
         setLoading(false);
       }
     }, 400);
-
+    // Limpieza: aborta fetch y limpia el debounce si cambia algo antes de completar
     return () => {
       controller.abort();
       clearTimeout(delayDebounce);

@@ -23,6 +23,7 @@ export default async function handler(
     } else {
       if (rocket) query.rocket = rocket as string;
       if (success !== undefined) {
+        // true o si no es true (no-exitosos)
         query.success = success === "true" ? true : { $ne: true };
       }
       if (search) query.name = { $regex: search as string, $options: "i" };
@@ -86,6 +87,7 @@ export default async function handler(
         }),
       ]);
 
+    // Validación de respuestas de la API externa
     if (!launchesRes.ok || !padsRes.ok || !rocketsRes.ok || !allLaunchesRes.ok)
       throw new Error("Error al consultar SpaceX API");
 
@@ -96,6 +98,7 @@ export default async function handler(
       totalDocs?: number;
     } = await launchesRes.json();
 
+    // Parseo de las respuestas (JSON)
     const launchpadsData: { docs: LaunchpadResponse[] } = await padsRes.json();
     const rocketsData: { docs: { id: string; name: string }[] } =
       await rocketsRes.json();
@@ -123,6 +126,7 @@ export default async function handler(
       };
     });
 
+    // Mapeo rápido de rockets por ID
     const rocketsMap: Record<string, { id: string; name: string }> = {};
     rocketsData.docs.forEach((rocket) => {
       rocketsMap[rocket.id] = { id: rocket.id, name: rocket.name };
@@ -165,6 +169,7 @@ export default async function handler(
       years: Array.from(allYears).sort((a, b) => b - a),
     };
 
+    // Respuesta al frontend: lanzamientos simplificados, filtros y paginación
     res.status(200).json({
       launches: simplifiedLaunches,
       filtersData,

@@ -25,10 +25,15 @@ const geistMono = Geist_Mono({
 });
 
 export default function Home() {
+  // Vista activa: lanzamientos, favoritos o mapa
   const [activeView, setActiveView] = useState<
     "launches" | "favorites" | "map"
   >("launches");
+
+  // Mensaje de feedback para favoritos
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Favoritos del usuario (custom hook)
   const { favorites } = useFavorites();
 
   // Filtros
@@ -47,6 +52,7 @@ export default function Home() {
     endDate: "",
   });
 
+  // Paginación de lanzamientos
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -76,18 +82,22 @@ export default function Home() {
     true
   );
 
+  // Actualiza totalPages cuando cambia el valor desde la API
   useEffect(() => {
     if (apiTotalPages) setTotalPages(apiTotalPages);
   }, [apiTotalPages]);
 
+  // Reinicia paginación al cambiar filtros
   useEffect(() => {
     setPage(1);
   }, [launchFilters]);
 
+  // Cierra el modal de feedback
   const handleCloseFeedback = useCallback(() => {
     setFeedback(null);
   }, []);
 
+  // Verifica si hay filtros activos
   const hasFilters = (filters: typeof launchFilters) =>
     !!(
       filters.rocket ||
@@ -112,6 +122,7 @@ export default function Home() {
       md:grid-rows-[auto_1fr_auto] 
       overflow-y-auto md:overflow-y-hidden`}
     >
+      {/* Header con filtros y control de vistas */}
       <Header
         filters={currentFilters}
         setFilters={setCurrentFilters}
@@ -121,8 +132,11 @@ export default function Home() {
         activeView={activeView}
         showFilters={!(activeView === "map" && window.innerWidth < 768)}
       />
+
+      {/* Navegación lateral */}
       <Sidebar activeView={activeView} setActiveView={setActiveView} />
 
+      {/* Vista de lanzamientos */}
       {activeView === "launches" && (
         <MainContent
           filters={launchFilters}
@@ -137,6 +151,7 @@ export default function Home() {
           setPage={setPage}
           totalDocs={totalDocs}
           onFeedback={setFeedback}
+          // Al seleccionar un lanzamiento: busca detalles y cambia a vista mapa
           onSelectLaunch={async (id) => {
             try {
               console.log("Fetching launch with id:", id);
@@ -157,6 +172,7 @@ export default function Home() {
         />
       )}
 
+      {/* Vista de favoritos */}
       {activeView === "favorites" && (
         <FavoritesContent
           favorites={filteredFavorites}
@@ -181,6 +197,7 @@ export default function Home() {
         />
       )}
 
+      {/* Vista de mapa: solo visible si está activa */}
       <div
         className={`col-span-5 row-span-3 md:col-span-4 ${
           activeView === "map" ? "block" : "hidden"

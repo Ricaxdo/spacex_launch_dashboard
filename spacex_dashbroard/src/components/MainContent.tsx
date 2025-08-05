@@ -25,12 +25,13 @@ export function MainContent({
   md:overflow-y-auto md:h-full 
   overflow-y-visible"
     >
+      {/* Muestra spinner de carga solo al cargar la primera página */}
       {loading && page === 1 && (
         <div className="flex justify-center items-center h-100">
           <FaSpinner className="animate-spin text-orange-500" size={45} />
         </div>
       )}
-
+      {/* Muestra mensaje de error si falla el fetch */}
       {error && (
         <p className="col-span-full text-center text-red-500">
           Error al cargar datos
@@ -123,7 +124,7 @@ export function MainContent({
           </div>
         </div>
       )}
-
+      {/* Si ya se buscó y no hay resultados: mensaje de "no hay datos" */}
       {hasFilters && hasSearched && !loading && launches.length === 0 && (
         <p className="col-span-full text-center text-gray-500 text-lg">
           No se encontraron resultados para tu búsqueda.

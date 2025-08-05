@@ -109,9 +109,7 @@ export function MapContent({ launches, selectedLaunch }: MapContentProps) {
         },
       });
     }
-
-    // ---- Ajuste para superposición de marcadores ----
-    // 1. Contamos cuántos hay en cada coordenada base
+    // Contamos cuántos hay en cada coordenada base
     const coordCount: Record<string, number> = {};
     const coordIndex: Record<string, number> = {};
 

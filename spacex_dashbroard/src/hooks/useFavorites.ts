@@ -21,10 +21,10 @@ export function useFavorites() {
     // Escuchar cambios externos (o internos)
     const handler = () => loadFavorites();
     window.addEventListener("storage", handler);
-
+    // Limpia el listener al desmontar
     return () => window.removeEventListener("storage", handler);
   }, []);
-
+  // Guarda favoritos en localStorage y dispara evento para sincronizar otros componentes
   const saveFavorites = (updated: SimplifiedLaunch[]) => {
     localStorage.setItem("favorites", JSON.stringify(updated));
     setFavorites(updated);
@@ -32,7 +32,7 @@ export function useFavorites() {
     // Disparar un evento manual para que otros componentes también sepan
     window.dispatchEvent(new Event("storage"));
   };
-
+  // Agrega un favorito si no existe ya
   const addFavorite = (launch: SimplifiedLaunch) => {
     setFavorites((prev) => {
       const exists = prev.some((fav) => fav.id === launch.id);
@@ -42,7 +42,7 @@ export function useFavorites() {
       return updated;
     });
   };
-
+  // Elimina favorito por id
   const removeFavorite = (id: string) => {
     setFavorites((prev) => {
       const updated = prev.filter((fav) => fav.id !== id);
