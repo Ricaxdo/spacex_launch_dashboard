@@ -71,8 +71,8 @@ Permite ver detalles, ubicaciones en Google Maps, buscar misiones y guardar favo
 
 ## Consideraciones
 - **Clave de Google Maps API:** Necesitas obtener una clave desde Google Cloud Console y agregarla a tu archivo .env.
-  -https://api.spacexdata.com/v4/launches
+  - https://api.spacexdata.com/v4/launches
 - **API pública de SpaceX:** No requiere autenticación adicional.
-  -https://console.cloud.google.com/
+  - https://console.cloud.google.com/
 - **localStorage:** Los favoritos se guardan localmente en tu navegador.
 - **Rendimiento:** La aplicación usa lazy loading si hay muchos lanzamientos para asegurar una experiencia fluida.
