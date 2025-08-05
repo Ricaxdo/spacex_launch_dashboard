@@ -68,3 +68,11 @@ Permite ver detalles, ubicaciones en Google Maps, buscar misiones y guardar favo
 4. Visualizacion en el mapa
    Accede a la ubicacion de cada lanzamientos con el icono 'maps'
    Haz clic en un marcador para ver su informacion
+
+## Consideraciones
+- **Clave de Google Maps API:** Necesitas obtener una clave desde Google Cloud Console y agregarla a tu archivo .env.
+- **API pública de SpaceX:** No requiere autenticación adicional.
+- **localStorage:** Los favoritos se guardan localmente en tu navegador.
+- **Rendimiento:** La aplicación usa lazy loading si hay muchos lanzamientos para asegurar una experiencia fluida.
+
+
