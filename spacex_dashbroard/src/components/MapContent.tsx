@@ -140,7 +140,10 @@ export function MapContent({ launches, selectedLaunch }: MapContentProps) {
 
   return (
     <div className="col-span-5 p-6">
-      <div ref={mapRef} className="w-full h-[calc(100vh-100px)]" />
+      <div
+        ref={mapRef}
+        className="w-full md:h-[calc(100vh-170px)] h-[calc(100vh-350px)]"
+      />
 
       <Script
         src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}

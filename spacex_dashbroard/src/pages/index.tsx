@@ -119,6 +119,7 @@ export default function Home() {
         hasFilters={hasFilters(currentFilters)}
         alwaysShowFilters={activeView === "favorites"}
         activeView={activeView}
+        showFilters={!(activeView === "map" && window.innerWidth < 768)}
       />
       <Sidebar activeView={activeView} setActiveView={setActiveView} />
 
@@ -181,7 +182,7 @@ export default function Home() {
       )}
 
       <div
-        className={`col-span-4 md:col-span-4 ${
+        className={`col-span-5 row-span-3 md:col-span-4 ${
           activeView === "map" ? "block" : "hidden"
         }`}
       >

@@ -111,6 +111,7 @@ export interface HeaderProps {
   hasFilters: boolean;
   alwaysShowFilters?: boolean;
   activeView?: "launches" | "favorites" | "map";
+  showFilters?: boolean;
 }
 
 export interface Filters {
