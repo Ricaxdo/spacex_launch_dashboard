@@ -160,6 +160,23 @@ export default function Home() {
         <FavoritesContent
           favorites={filteredFavorites}
           onFeedback={setFeedback}
+          onSelectLaunch={async (id) => {
+            try {
+              console.log("Fetching launch with id:", id);
+              const res = await fetch(`/api/launches?id=${id}`);
+              const data = await res.json();
+              console.log("Launch fetched:", data);
+
+              if (data.launches && data.launches.length > 0) {
+                setSelectedLaunch(data.launches[0]);
+                setActiveView("map");
+              } else {
+                console.warn("No launch found for this ID");
+              }
+            } catch (err) {
+              console.error("Error fetching single launch:", err);
+            }
+          }}
         />
       )}
 

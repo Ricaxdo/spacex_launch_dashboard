@@ -18,6 +18,7 @@ export function MapContent({ launches, selectedLaunch }: MapContentProps) {
     { marker: google.maps.Marker; launch: SimplifiedLaunch }[]
   >([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const markerClusterRef = useRef<MarkerClusterer | null>(null); // Guardamos instancia del cluster
 
   // Inicializa el mapa una sola vez
   const initMap = useCallback(() => {
@@ -25,10 +26,9 @@ export function MapContent({ launches, selectedLaunch }: MapContentProps) {
 
     console.log("Inicializando mapa...");
 
-    // Si ya había mapa, lo destruimos (reset)
+    // Resetear contenido por si acaso
     mapRef.current.innerHTML = "";
 
-    // Reinicializamos
     mapInstance.current = new google.maps.Map(mapRef.current, {
       center: { lat: 28.5623, lng: -80.5774 },
       zoom: 5,
@@ -36,34 +36,41 @@ export function MapContent({ launches, selectedLaunch }: MapContentProps) {
 
     infoWindowRef.current = new google.maps.InfoWindow();
 
-    console.log("Mapa y marcador reinicializados");
+    console.log("Mapa inicializado");
   }, []);
 
   // Crea/actualiza marcadores cuando cambian los lanzamientos
+  // Dentro del useEffect que maneja los lanzamientos y selectedLaunch:
+
   useEffect(() => {
     if (!mapInstance.current) return;
 
     console.log("MapContent > launches:", launches);
 
-    // Limpiar marcadores previos
-    markersRef.current.forEach((m) => m.marker.setMap(null));
-    markersRef.current = [];
-
+    // Agregar marcadores que no existan
     const bounds = new google.maps.LatLngBounds();
 
-    // Si no hay lanzamientos pero hay uno seleccionado, lo agregamos
-    const allMarkers =
-      launches.length > 0 ? launches : selectedLaunch ? [selectedLaunch] : [];
+    // Combinar lanzamientos + selectedLaunch (si no está en launches)
+    const allToShow = launches.slice(); // copia los lanzamientos actuales
+    if (selectedLaunch && !launches.find((l) => l.id === selectedLaunch.id)) {
+      allToShow.push(selectedLaunch);
+    }
 
-    allMarkers
-      .filter(
-        (l) =>
-          l.launchpad.latitude &&
-          l.launchpad.longitude &&
-          !isNaN(l.launchpad.latitude) &&
-          !isNaN(l.launchpad.longitude)
-      )
-      .forEach((launch) => {
+    // Para cada lanzamiento a mostrar:
+    allToShow.forEach((launch) => {
+      // Si ya existe marcador para este launch, no crear otro
+      const existing = markersRef.current.find(
+        (m) => m.launch.id === launch.id
+      );
+      if (!existing) {
+        if (
+          !launch.launchpad.latitude ||
+          !launch.launchpad.longitude ||
+          isNaN(launch.launchpad.latitude) ||
+          isNaN(launch.launchpad.longitude)
+        )
+          return;
+
         const marker = new google.maps.Marker({
           position: {
             lat: launch.launchpad.latitude,
@@ -73,20 +80,18 @@ export function MapContent({ launches, selectedLaunch }: MapContentProps) {
           map: mapInstance.current!,
         });
 
-        bounds.extend(marker.getPosition()!);
-
         const content = `
-          <div style="font-family: Arial; font-size:14px">
-            <h3>${launch.name}</h3>
-            <p>Fecha: ${format(new Date(launch.date), "dd/MM/yyyy")}</p>
-            <p style="color:${launch.success ? "green" : "red"}">
-              Resultado: ${launch.success ? "Exitoso" : "Fallido"}
-            </p>
-            <p>Ubicación: ${launch.launchpad.name} (${
+        <div style="font-family: Arial; font-size:14px">
+          <h3>${launch.name}</h3>
+          <p>Fecha: ${format(new Date(launch.date), "dd/MM/yyyy")}</p>
+          <p style="color:${launch.success ? "green" : "red"}">
+            Resultado: ${launch.success ? "Exitoso" : "Fallido"}
+          </p>
+          <p>Ubicación: ${launch.launchpad.name} (${
           launch.launchpad.locality
         }, ${launch.launchpad.region})</p>
-          </div>
-        `;
+        </div>
+      `;
 
         marker.addListener("click", () => {
           infoWindowRef.current?.setContent(content);
@@ -94,15 +99,22 @@ export function MapContent({ launches, selectedLaunch }: MapContentProps) {
         });
 
         markersRef.current.push({ marker, launch });
-      });
 
-    if (!bounds.isEmpty()) mapInstance.current.fitBounds(bounds);
-
-    // Cluster de marcadores
-    new MarkerClusterer({
-      markers: markersRef.current.map((m) => m.marker),
-      map: mapInstance.current,
+        // Añadimos el nuevo marcador al cluster
+        if (markerClusterRef.current) {
+          markerClusterRef.current.addMarker(marker);
+        }
+      }
     });
+
+    // Actualizar bounds para todos los marcadores
+    markersRef.current.forEach(({ marker }) => {
+      bounds.extend(marker.getPosition()!);
+    });
+
+    if (!bounds.isEmpty()) {
+      mapInstance.current.fitBounds(bounds);
+    }
   }, [launches, selectedLaunch]);
 
   // Centrar en el lanzamiento seleccionado
@@ -116,10 +128,13 @@ export function MapContent({ launches, selectedLaunch }: MapContentProps) {
     );
 
     if (selectedMarker) {
-      mapInstance.current.setCenter(selectedMarker.marker.getPosition()!);
-      mapInstance.current.setZoom(10);
-      infoWindowRef.current?.setContent(`<b>${selectedLaunch.name}</b>`);
-      infoWindowRef.current?.open(mapInstance.current, selectedMarker.marker);
+      const position = selectedMarker.marker.getPosition();
+      if (position) {
+        mapInstance.current.setCenter(position);
+        mapInstance.current.setZoom(10); // ajusta el zoom que quieras
+        infoWindowRef.current?.setContent(`<b>${selectedLaunch.name}</b>`);
+        infoWindowRef.current?.open(mapInstance.current, selectedMarker.marker);
+      }
     }
   }, [selectedLaunch]);
 

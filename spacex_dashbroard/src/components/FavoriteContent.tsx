@@ -4,11 +4,13 @@ import { SimplifiedLaunch } from "@/types/spacex";
 interface FavoritesContentProps {
   favorites: SimplifiedLaunch[];
   onFeedback: (msg: string) => void;
+  onSelectLaunch?: (id: string) => void; // Añadido
 }
 
 export function FavoritesContent({
   favorites,
   onFeedback,
+  onSelectLaunch, // Recibimos
 }: FavoritesContentProps) {
   return (
     <div className="col-span-5 md:col-span-4 p-6 overflow-y-visible md:overflow-y-auto md:h-full">
@@ -24,6 +26,7 @@ export function FavoritesContent({
               launch={launch}
               isFavoriteView
               onFeedback={onFeedback}
+              onSelectLaunch={onSelectLaunch} // Pasamos el callback
             />
           ))}
         </div>
