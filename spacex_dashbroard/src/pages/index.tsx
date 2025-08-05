@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { MainContent } from "@/components/MainContent";
 import { Sidebar } from "@/components/Sidebar";
+import { useFilters } from "@/hooks/useFilters";
 import { useLaunches } from "@/hooks/useLaunches";
 import { Geist, Geist_Mono } from "next/font/google";
 import { useEffect, useState } from "react";
@@ -20,21 +21,19 @@ export default function Home() {
     startDate: "",
     endDate: "",
   });
-
   // Estados para paginación
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
+  //Cargamos los datos de filtros
+  const { filtersData } = useFilters();
   // Datos de API
   const {
     launches,
-    filtersData,
     loading,
     error,
     totalPages: apiTotalPages,
     totalDocs,
   } = useLaunches(filters, page, 9, true);
-
   // Actualizamos totalPages cada vez que cambien los datos
   useEffect(() => {
     if (apiTotalPages) setTotalPages(apiTotalPages);
@@ -43,7 +42,6 @@ export default function Home() {
   useEffect(() => {
     setPage(1);
   }, [filters]);
-
   // Saber si hay algún filtro activ
   const hasFilters = !!(
     filters.rocket ||
