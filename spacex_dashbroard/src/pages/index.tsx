@@ -2,9 +2,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { useEffect, useState } from "react";
 
 //Componentes
+import { FavoritesContent } from "@/components/FavoriteContent";
 import { FeedbackModal } from "@/components/FeedbackModal";
 import { Header } from "@/components/Header";
-import { LaunchCard } from "@/components/LaunchCard";
 import { MainContent } from "@/components/MainContent";
 import { Sidebar } from "@/components/Sidebar";
 
@@ -126,24 +126,11 @@ export default function Home() {
       )}
 
       {activeView === "favorites" && (
-        <div className="col-span-5 md:col-span-4 p-6 overflow-y-visible md:overflow-y-auto md:h-full">
-          {filteredFavorites.length === 0 ? (
-            <p className="text-gray-500">
-              No se encontraron favoritos con estos filtros.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredFavorites.map((launch) => (
-                <LaunchCard
-                  key={launch.id}
-                  launch={launch}
-                  isFavoriteView
-                  onFeedback={setFeedback}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        <FavoritesContent
+          favorites={filteredFavorites}
+          filters={favoriteFilters}
+          onFeedback={setFeedback}
+        />
       )}
 
       <footer className="col-span-5 row-span-1 p-4 bg-white shadow text-center text-gray-600 border-t border-gray-200">
