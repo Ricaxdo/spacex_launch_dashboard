@@ -45,9 +45,9 @@ Permite ver detalles, ubicaciones en Google Maps, buscar misiones y guardar favo
    yarn dev
 
 ## Docker (opcional)
-    ```bash
     docker build -t spacex-dashboard .
     docker run -p 3000:3000 spacex-dashboard
+
 
 ---
 
