@@ -11,32 +11,39 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const { rocket, success, search, startDate, endDate, page, limit } =
+    const { rocket, success, search, startDate, endDate, page, limit, id } =
       req.query;
 
     // Construcción dinámica del query
     const query: LaunchQuery = {};
-    if (rocket) query.rocket = rocket as string;
-    if (success !== undefined) {
-      query.success = success === "true" ? true : { $ne: true };
-    }
-    // Busqueda de texto con regex
-    if (search) query.name = { $regex: search as string, $options: "i" };
 
-    if (startDate || endDate) {
-      query.date_utc = {};
-      if (startDate) query.date_utc.$gte = startDate as string;
-      if (endDate) query.date_utc.$lte = endDate as string;
+    // Si viene un ID, buscamos solo ese lanzamiento
+    if (id) {
+      query._id = id as string; // <-- Cambiado a _id
+    } else {
+      if (rocket) query.rocket = rocket as string;
+      if (success !== undefined) {
+        query.success = success === "true" ? true : { $ne: true };
+      }
+      if (search) query.name = { $regex: search as string, $options: "i" };
+      if (startDate || endDate) {
+        query.date_utc = {};
+        if (startDate) query.date_utc.$gte = startDate as string;
+        if (endDate) query.date_utc.$lte = endDate as string;
+      }
     }
-    // Opciones con paginación activada
+
+    // Opciones con paginación
+    const paginationEnabled = !id && req.query.pagination !== "false";
     const options = {
       sort: { date_utc: "desc" },
       select: ["id", "name", "date_utc", "success", "launchpad", "rocket"],
-      pagination: true,
-      page: page ? parseInt(page as string, 10) : 1,
-      limit: limit ? parseInt(limit as string, 10) : 9,
+      pagination: paginationEnabled,
+      page: paginationEnabled && page ? parseInt(page as string, 10) : 1,
+      limit: paginationEnabled && limit ? parseInt(limit as string, 10) : 9999,
     };
 
+    // Peticiones paralelas
     const [launchesRes, padsRes, rocketsRes, allLaunchesRes] =
       await Promise.all([
         fetch("https://api.spacexdata.com/v4/launches/query", {
@@ -94,7 +101,8 @@ export default async function handler(
       await rocketsRes.json();
     const allLaunchesData: { docs: { date_utc: string }[] } =
       await allLaunchesRes.json();
-    // Mapeo de launchpads
+
+    // Map launchpads
     const padsMap: Record<
       string,
       {
@@ -119,7 +127,8 @@ export default async function handler(
     rocketsData.docs.forEach((rocket) => {
       rocketsMap[rocket.id] = { id: rocket.id, name: rocket.name };
     });
-    // Simplificamos los lanzamientos filtrados
+
+    // Simplificamos lanzamientos
     const simplifiedLaunches: SimplifiedLaunch[] = launchesData.docs.map(
       (launch) => ({
         id: launch.id,
@@ -139,6 +148,7 @@ export default async function handler(
         },
       })
     );
+
     // Filtros para selects
     const allRockets = rocketsData.docs.map((rocket) => ({
       id: rocket.id,
@@ -154,7 +164,7 @@ export default async function handler(
       rockets: allRockets,
       years: Array.from(allYears).sort((a, b) => b - a),
     };
-    // Incluimos info de paginación
+
     res.status(200).json({
       launches: simplifiedLaunches,
       filtersData,

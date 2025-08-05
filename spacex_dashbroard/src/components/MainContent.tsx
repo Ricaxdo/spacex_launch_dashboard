@@ -14,6 +14,7 @@ export function MainContent({
   setPage,
   totalDocs,
   onFeedback,
+  onSelectLaunch,
 }: MainContentProps) {
   return (
     <main
@@ -129,7 +130,11 @@ export function MainContent({
       {/* Lista de lanzamientos */}
       {launches.length > 0 && (
         <>
-          <LaunchList launches={launches} onFeedback={onFeedback} />
+          <LaunchList
+            launches={launches}
+            onFeedback={onFeedback}
+            onSelectLaunch={onSelectLaunch}
+          />
 
           {/* Info de cantidad y página */}
           <p className="text-center text-sm text-gray-500 mt-4">

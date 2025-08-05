@@ -5,7 +5,8 @@ export function useLaunches(
   filters: LaunchFilters,
   page: number = 1,
   limit: number = 9,
-  requireFilters: boolean = false
+  requireFilters: boolean = false,
+  disablePagination: boolean = false // <-- Nuevo parámetro
 ) {
   const [launches, setLaunches] = useState<SimplifiedLaunch[]>([]);
   const [filtersData, setFiltersData] = useState<FiltersData>({
@@ -16,7 +17,6 @@ export function useLaunches(
   const [totalDocs, setTotalDocs] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Para saber si los filtros cambiaron sin necesidad de un re-render
   const prevFiltersRef = useRef(filters);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function useLaunches(
 
     if (JSON.stringify(prevFiltersRef.current) !== JSON.stringify(filters)) {
       setLaunches([]);
-      prevFiltersRef.current = filters; // actualizar ref
+      prevFiltersRef.current = filters;
     }
 
     const controller = new AbortController();
@@ -44,7 +44,7 @@ export function useLaunches(
       try {
         setLoading(true);
         setError(null);
-        // Construir URL
+
         const params = new URLSearchParams();
         if (filters.rocket) params.append("rocket", filters.rocket);
         if (filters.success !== undefined)
@@ -52,8 +52,13 @@ export function useLaunches(
         if (filters.search) params.append("search", filters.search);
         if (filters.startDate) params.append("startDate", filters.startDate);
         if (filters.endDate) params.append("endDate", filters.endDate);
-        params.append("page", page.toString());
-        params.append("limit", limit.toString());
+
+        if (!disablePagination) {
+          params.append("page", page.toString());
+          params.append("limit", limit.toString());
+        } else {
+          params.append("pagination", "false"); // SIN PAGINACIÓN
+        }
 
         const url = `/api/launches?${params.toString()}`;
         const res = await fetch(url, { signal: controller.signal });
@@ -65,12 +70,24 @@ export function useLaunches(
           pagination: { totalPages: number; totalDocs: number };
         } = await res.json();
 
+        console.log(
+          "Hook useLaunches > launches recibidos:",
+          data.launches.map((l) => ({
+            id: l.id,
+            name: l.name,
+            lat: l.launchpad.latitude,
+            lng: l.launchpad.longitude,
+          }))
+        );
+
         setFiltersData(data.filtersData);
         setTotalPages(data.pagination.totalPages);
         setTotalDocs(data.pagination.totalDocs);
-        // Si page = 1 reiniciamos, si no acumulamos
+
         setLaunches((prev) =>
-          page === 1 ? data.launches : [...prev, ...data.launches]
+          page === 1 || disablePagination
+            ? data.launches
+            : [...prev, ...data.launches]
         );
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
@@ -86,7 +103,7 @@ export function useLaunches(
       controller.abort();
       clearTimeout(delayDebounce);
     };
-  }, [filters, page, limit, requireFilters]);
+  }, [filters, page, limit, requireFilters, disablePagination]);
 
   return { launches, filtersData, totalPages, totalDocs, loading, error };
 }

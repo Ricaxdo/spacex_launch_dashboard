@@ -1,20 +1,21 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { useEffect, useState } from "react";
 
-//Componentes
+// Componentes
 import { FavoritesContent } from "@/components/FavoriteContent";
 import { FeedbackModal } from "@/components/FeedbackModal";
 import { Header } from "@/components/Header";
 import { MainContent } from "@/components/MainContent";
-import { MapView } from "@/components/MapContent";
+import { MapContent } from "@/components/MapContent";
 import { Sidebar } from "@/components/Sidebar";
 
-//Hooks
+// Hooks
 import { useFavorites } from "@/hooks/useFavorites";
 import { useFilters } from "@/hooks/useFilters";
 import { useLaunches } from "@/hooks/useLaunches";
 
-//Helper
+// Helper
+import { SimplifiedLaunch } from "@/types/spacex";
 import { filterLaunches } from "@/utils/filterLaunches";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -30,7 +31,7 @@ export default function Home() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const { favorites } = useFavorites();
 
-  // Filtros para cada vista
+  // Filtros
   const [launchFilters, setLaunchFilters] = useState({
     rocket: "",
     success: undefined as boolean | undefined,
@@ -38,7 +39,6 @@ export default function Home() {
     startDate: "",
     endDate: "",
   });
-
   const [favoriteFilters, setFavoriteFilters] = useState({
     rocket: "",
     success: undefined as boolean | undefined,
@@ -47,23 +47,35 @@ export default function Home() {
     endDate: "",
   });
 
-  // Estados para paginación (solo para lanzamientos)
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  //Cargamos los datos de filtros
+  // Nuevo: lanzamiento seleccionado
+  const [selectedLaunch, setSelectedLaunch] = useState<SimplifiedLaunch | null>(
+    null
+  );
+
+  // Filtros generales
   const { filtersData } = useFilters();
 
-  // Datos de API para lanzamientos
+  // Lanzamientos paginados
   const {
-    launches,
+    launches: paginatedLaunches,
     loading,
     error,
     totalPages: apiTotalPages,
     totalDocs,
   } = useLaunches(launchFilters, page, 9, true);
 
-  // Actualizamos totalPages cada vez que cambien los datos
+  // Lanzamientos completos (para el mapa)
+  const { launches: allLaunches } = useLaunches(
+    { rocket: "", success: undefined, search: "", startDate: "", endDate: "" },
+    1,
+    9999,
+    false,
+    true
+  );
+
   useEffect(() => {
     if (apiTotalPages) setTotalPages(apiTotalPages);
   }, [apiTotalPages]);
@@ -72,7 +84,6 @@ export default function Home() {
     setPage(1);
   }, [launchFilters]);
 
-  // Saber si hay filtros aplicados
   const hasFilters = (filters: typeof launchFilters) =>
     !!(
       filters.rocket ||
@@ -82,10 +93,8 @@ export default function Home() {
       filters.endDate
     );
 
-  // Filtro aplicado a los favoritos usando helper
   const filteredFavorites = filterLaunches(favorites, favoriteFilters);
 
-  // Determinar qué filtros usar según vista activa
   const currentFilters =
     activeView === "launches" ? launchFilters : favoriteFilters;
   const setCurrentFilters =
@@ -114,7 +123,7 @@ export default function Home() {
           filters={launchFilters}
           setFilters={setLaunchFilters}
           filtersData={filtersData}
-          launches={launches}
+          launches={paginatedLaunches}
           hasFilters={hasFilters(launchFilters)}
           loading={loading}
           error={error}
@@ -123,6 +132,23 @@ export default function Home() {
           setPage={setPage}
           totalDocs={totalDocs}
           onFeedback={setFeedback}
+          onSelectLaunch={async (id) => {
+            try {
+              console.log("Fetching launch with id:", id);
+              const res = await fetch(`/api/launches?id=${id}`);
+              const data = await res.json();
+              console.log("Launch fetched:", data);
+
+              if (data.launches && data.launches.length > 0) {
+                setSelectedLaunch(data.launches[0]); // Guardamos el lanzamiento seleccionado
+                setActiveView("map");
+              } else {
+                console.warn("No launch found for this ID");
+              }
+            } catch (err) {
+              console.error("Error fetching single launch:", err);
+            }
+          }}
         />
       )}
 
@@ -134,7 +160,13 @@ export default function Home() {
         />
       )}
 
-      {activeView === "map" && <MapView launches={launches} />}
+      <div
+        className={`col-span-4 md:col-span-4 ${
+          activeView === "map" ? "block" : "hidden"
+        }`}
+      >
+        <MapContent launches={allLaunches} selectedLaunch={selectedLaunch} />
+      </div>
 
       <footer className="col-span-5 row-span-1 p-4 bg-white shadow text-center text-gray-600 border-t border-gray-200">
         © 2025 SpaceX. By Ricardo Castro

@@ -1,11 +1,14 @@
 import { Dispatch, SetStateAction } from "react";
 
 export interface LaunchQuery {
+  _id?: string; // <-- Agregado para búsqueda directa por id
   rocket?: string;
-  success?: boolean | { $ne: boolean };
-  $text?: { $search: string };
-  name?: { $regex: string; $options?: string };
-  date_utc?: { $gte?: string; $lte?: string };
+  success?: boolean | { $ne: true };
+  name?: { $regex: string; $options: string };
+  date_utc?: {
+    $gte?: string;
+    $lte?: string;
+  };
 }
 
 export interface LaunchResponse {
@@ -84,6 +87,7 @@ export interface MainContentProps {
   setPage: (page: number) => void;
   totalDocs: number;
   onFeedback?: (msg: string) => void;
+  onSelectLaunch?: (id: string) => void;
 }
 
 export interface HeaderProps {
@@ -120,4 +124,11 @@ export interface Filters {
 export interface SidebarProps {
   activeView: "launches" | "favorites" | "map";
   setActiveView: (view: "launches" | "favorites" | "map") => void;
+}
+
+export interface LaunchCardProps {
+  launch: SimplifiedLaunch;
+  isFavoriteView?: boolean;
+  onFeedback?: (msg: string) => void;
+  onSelectLaunch?: (id: string) => void;
 }
