@@ -7,7 +7,7 @@ interface FeedbackModalProps {
 
 export function FeedbackModal({ message, onClose }: FeedbackModalProps) {
   useEffect(() => {
-    const timer = setTimeout(onClose, 1000);
+    const timer = setTimeout(onClose, 500);
     return () => clearTimeout(timer);
   }, [onClose]);
 

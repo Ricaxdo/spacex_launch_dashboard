@@ -1,28 +1,23 @@
 import { useFavorites } from "@/hooks/useFavorites";
-import { SimplifiedLaunch } from "@/types/spacex";
+import { LaunchCardProps } from "@/types/spacex";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-
-interface LaunchCardProps {
-  launch: SimplifiedLaunch;
-  isFavoriteView?: boolean;
-  onFeedback?: (msg: string) => void;
-}
+import { FaHeart, FaMapMarkerAlt, FaRegHeart } from "react-icons/fa";
 
 export function LaunchCard({
   launch,
   isFavoriteView = false,
   onFeedback,
+  onSelectLaunch,
 }: LaunchCardProps) {
   const { favorites, addFavorite, removeFavorite } = useFavorites();
   const [isAlreadyFavorite, setIsAlreadyFavorite] = useState(false);
 
-  // Detectar si este launch ya está en favoritos
   useEffect(() => {
     setIsAlreadyFavorite(favorites.some((fav) => fav.id === launch.id));
   }, [favorites, launch.id]);
 
-  const handleClick = () => {
+  const handleFavoriteClick = () => {
     if (isFavoriteView) {
       onFeedback?.("Lanzamiento eliminado de favoritos");
       removeFavorite(launch.id);
@@ -34,7 +29,39 @@ export function LaunchCard({
 
   return (
     <div className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition self-start h-full flex flex-col relative">
-      <h2 className="font-bold text-xl text-black flex-1">{launch.name}</h2>
+      {/* Contenedor del título + botones */}
+      <div className="flex flex-1 justify-between items-center mb-2">
+        <h2 className="font-bold text-xl flex-1 text-black">{launch.name}</h2>
+
+        <div className="flex space-x-3 px-1">
+          {/* Botón favorito */}
+          <button
+            onClick={handleFavoriteClick}
+            aria-label={
+              isAlreadyFavorite
+                ? "Eliminar de favoritos"
+                : "Agregar a favoritos"
+            }
+            className="text-red-500 hover:text-red-600 focus:outline-none"
+          >
+            {isAlreadyFavorite ? (
+              <FaHeart size={30} />
+            ) : (
+              <FaRegHeart size={30} />
+            )}
+          </button>
+
+          {/* Botón ver ubicación */}
+          <button
+            onClick={() => onSelectLaunch?.(launch.id)}
+            aria-label="Ver ubicación en el mapa"
+            className="text-blue-600 hover:text-purple-700 focus:outline-none"
+          >
+            <FaMapMarkerAlt size={30} />
+          </button>
+        </div>
+      </div>
+
       <div className="flex-1">
         <p className="text-gray-600">
           Fecha: {format(new Date(launch.date), "dd/MM/yyyy")}
@@ -51,23 +78,6 @@ export function LaunchCard({
           )
         </p>
       </div>
-      <button
-        onClick={handleClick}
-        disabled={false}
-        className={`mt-3 px-3 py-1 rounded-xl text-white ${
-          isFavoriteView
-            ? "bg-red-500 hover:bg-red-600"
-            : isAlreadyFavorite
-            ? "bg-green-400"
-            : "bg-blue-500 hover:bg-blue-600"
-        }`}
-      >
-        {isFavoriteView
-          ? "Eliminar de favoritos"
-          : isAlreadyFavorite
-          ? "Ya en favoritos"
-          : "Agregar a favoritos"}
-      </button>
     </div>
   );
 }
