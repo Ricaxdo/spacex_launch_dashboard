@@ -16,7 +16,11 @@ export function MainContent({
   onFeedback,
 }: MainContentProps) {
   return (
-    <main className="col-span-5 md:col-span-4 row-span-1 p-6 overflow-y-auto">
+    <main
+      className="col-span-5 md:col-span-4 row-span-1 p-6 
+  md:overflow-y-auto md:h-full 
+  overflow-y-visible"
+    >
       {loading && page === 1 && (
         <p className="col-span-full text-center">Cargando lanzamientos...</p>
       )}

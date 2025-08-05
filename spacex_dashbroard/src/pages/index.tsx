@@ -66,8 +66,10 @@ export default function Home() {
   return (
     <div
       className={`${geistSans.className} ${geistMono.className} grid h-screen bg-gray-50 
-      grid-cols-5 grid-rows-[auto_auto_1fr_auto] 
-      md:grid-cols-[minmax(0,_1fr)_1fr_1fr_1fr_1fr] md:grid-rows-[auto_1fr_auto]`}
+    grid-cols-5 grid-rows-[auto_auto_1fr_auto] 
+    md:grid-cols-[minmax(0,_1fr)_1fr_1fr_1fr_1fr] 
+    md:grid-rows-[auto_1fr_auto] 
+    overflow-y-auto md:overflow-y-hidden`}
     >
       <Header
         filters={filters}
