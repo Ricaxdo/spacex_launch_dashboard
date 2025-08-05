@@ -4,10 +4,10 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: "AIzaSyA6e9eHmOZWm5wkGHXwiA6a8bpyg3__9NQ"
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: "AQUI_VA_TU_API_KEY"
     container_name: spacex_dashboard
     ports:
       - "3000:3000"
     restart: always
     environment:
-      - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyA6e9eHmOZWm5wkGHXwiA6a8bpyg3__9NQ
+      - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AQUI_VA_TU_API_KEY
