@@ -7,6 +7,7 @@ RUN git clone https://github.com/Ricaxdo/spacex_launch_dashboard.git .
 
 # Entrar a la carpeta del proyecto
 WORKDIR /app/spacex_dashbroard
+RUN git checkout develop
 # Instalar dependencias
 RUN npm install
 
