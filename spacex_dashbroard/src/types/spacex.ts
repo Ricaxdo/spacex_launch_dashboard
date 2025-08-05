@@ -1,7 +1,10 @@
+import { Dispatch, SetStateAction } from "react";
+
 export interface LaunchQuery {
   rocket?: string;
   success?: boolean | { $ne: boolean };
   $text?: { $search: string };
+  name?: { $regex: string; $options?: string };
   date_utc?: { $gte?: string; $lte?: string };
 }
 
@@ -48,4 +51,32 @@ export interface LaunchFilters {
 export interface FiltersData {
   rockets: { id: string; name: string }[];
   years: number[];
+}
+
+export interface MainContentProps {
+  filters: {
+    rocket: string;
+    success: boolean | undefined;
+    search: string;
+    startDate: string;
+    endDate: string;
+  };
+  setFilters: Dispatch<
+    SetStateAction<{
+      rocket: string;
+      success: boolean | undefined;
+      search: string;
+      startDate: string;
+      endDate: string;
+    }>
+  >;
+  filtersData: { rockets: { id: string; name: string }[]; years: number[] };
+  launches: SimplifiedLaunch[];
+  hasFilters: boolean;
+  loading: boolean;
+  error: string | null;
+  page: number;
+  totalPages: number;
+  setPage: (page: number) => void;
+  totalDocs: number;
 }

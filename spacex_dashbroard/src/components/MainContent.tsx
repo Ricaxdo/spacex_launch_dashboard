@@ -1,34 +1,5 @@
 import { LaunchList } from "@/components/LaunchList";
-import { SimplifiedLaunch } from "@/types/spacex";
-import { Dispatch, SetStateAction } from "react";
-
-interface MainContentProps {
-  filters: {
-    rocket: string;
-    success: boolean | undefined;
-    search: string;
-    startDate: string;
-    endDate: string;
-  };
-  setFilters: Dispatch<
-    SetStateAction<{
-      rocket: string;
-      success: boolean | undefined;
-      search: string;
-      startDate: string;
-      endDate: string;
-    }>
-  >;
-  filtersData: { rockets: { id: string; name: string }[]; years: number[] };
-  launches: SimplifiedLaunch[];
-  hasFilters: boolean;
-  loading: boolean;
-  error: string | null;
-  page: number;
-  totalPages: number;
-  setPage: (page: number) => void;
-  totalDocs: number;
-}
+import { MainContentProps } from "@/types/spacex";
 
 export function MainContent({
   filters,
@@ -65,19 +36,12 @@ export function MainContent({
             Selecciona filtros o busca para comenzar
           </p>
 
-          {/* Barra de búsqueda centrada */}
-          <input
-            type="text"
-            placeholder="Buscar nombre de misión..."
-            className="p-2 border rounded-md w-full max-w-xl"
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-          />
-
-          {/* Filtros centrados */}
+          {/* Filtros scrolleables */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-xl">
+            {/* Año */}
             <select
-              className="p-2 border rounded-md"
+              className="p-2 border rounded-md w-full max-h-40 overflow-y-auto"
+              size={2} // Muestra 6 años visibles, luego scroll
               value={filters.startDate ? filters.startDate.split("-")[0] : ""}
               onChange={(e) => {
                 const year = e.target.value;
@@ -96,8 +60,9 @@ export function MainContent({
               ))}
             </select>
 
+            {/* Resultado */}
             <select
-              className="p-2 border rounded-md"
+              className="p-2 border rounded-md w-full"
               value={
                 filters.success === undefined
                   ? ""
@@ -120,8 +85,9 @@ export function MainContent({
               <option value="false">Fallido</option>
             </select>
 
+            {/* Cohete */}
             <select
-              className="p-2 border rounded-md"
+              className="p-2 border rounded-md w-full"
               value={filters.rocket}
               onChange={(e) =>
                 setFilters({ ...filters, rocket: e.target.value })
