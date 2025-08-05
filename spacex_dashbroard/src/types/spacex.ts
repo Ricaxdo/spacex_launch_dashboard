@@ -79,4 +79,5 @@ export interface MainContentProps {
   totalPages: number;
   setPage: (page: number) => void;
   totalDocs: number;
+  onFeedback?: (msg: string) => void;
 }
