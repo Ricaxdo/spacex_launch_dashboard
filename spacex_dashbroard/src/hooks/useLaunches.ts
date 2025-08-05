@@ -80,7 +80,7 @@ export function useLaunches(
       } finally {
         setLoading(false);
       }
-    }, 300);
+    }, 400);
 
     return () => {
       controller.abort();

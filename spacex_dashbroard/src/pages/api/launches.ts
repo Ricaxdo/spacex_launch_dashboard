@@ -20,21 +20,21 @@ export default async function handler(
     if (success !== undefined) {
       query.success = success === "true" ? true : { $ne: true };
     }
+    // Busqueda de texto con regex
+    if (search) query.name = { $regex: search as string, $options: "i" };
 
-    if (search) query.$text = { $search: search as string };
     if (startDate || endDate) {
       query.date_utc = {};
       if (startDate) query.date_utc.$gte = startDate as string;
       if (endDate) query.date_utc.$lte = endDate as string;
     }
-
     // Opciones con paginación activada
     const options = {
       sort: { date_utc: "desc" },
       select: ["id", "name", "date_utc", "success", "launchpad", "rocket"],
       pagination: true,
-      page: page ? parseInt(page as string, 10) : 1, // página actual
-      limit: limit ? parseInt(limit as string, 10) : 9, // por defecto 9 por página
+      page: page ? parseInt(page as string, 10) : 1,
+      limit: limit ? parseInt(limit as string, 10) : 9,
     };
 
     const [launchesRes, padsRes, rocketsRes, allLaunchesRes] =
@@ -85,7 +85,6 @@ export default async function handler(
       await rocketsRes.json();
     const allLaunchesData: { docs: { date_utc: string }[] } =
       await allLaunchesRes.json();
-
     // Mapeo de launchpads
     const padsMap: Record<
       string,
@@ -99,12 +98,10 @@ export default async function handler(
       };
     });
 
-    // Mapeo de rockets
     const rocketsMap: Record<string, { id: string; name: string }> = {};
     rocketsData.docs.forEach((rocket) => {
       rocketsMap[rocket.id] = { id: rocket.id, name: rocket.name };
     });
-
     // Simplificamos los lanzamientos filtrados
     const simplifiedLaunches: SimplifiedLaunch[] = launchesData.docs.map(
       (launch) => ({
@@ -123,7 +120,6 @@ export default async function handler(
         },
       })
     );
-
     // Filtros para selects
     const allRockets = rocketsData.docs.map((rocket) => ({
       id: rocket.id,
@@ -139,7 +135,6 @@ export default async function handler(
       rockets: allRockets,
       years: Array.from(allYears).sort((a, b) => b - a),
     };
-
     // Incluimos info de paginación
     res.status(200).json({
       launches: simplifiedLaunches,
