@@ -62,6 +62,7 @@ export function MainContent({
                   startDate: year ? `${year}-01-01` : "",
                   endDate: year ? `${year}-12-31` : "",
                 });
+                setHasSearched(true);
               }}
             >
               <option value="">Seleccionar año</option>
@@ -84,15 +85,16 @@ export function MainContent({
                   ? "true"
                   : "false"
               }
-              onChange={(e) =>
+              onChange={(e) => {
                 setFilters({
                   ...filters,
                   success:
                     e.target.value === ""
                       ? undefined
                       : e.target.value === "true",
-                })
-              }
+                });
+                setHasSearched(true); // <--- agrega esto!
+              }}
             >
               <option value="" disabled>
                 Resultado
@@ -107,9 +109,10 @@ export function MainContent({
                 filters.rocket === "" ? "text-gray-500" : "text-black"
               }`}
               value={filters.rocket}
-              onChange={(e) =>
-                setFilters({ ...filters, rocket: e.target.value })
-              }
+              onChange={(e) => {
+                setFilters({ ...filters, rocket: e.target.value });
+                setHasSearched(true);
+              }}
             >
               <option value="" disabled>
                 Cohete
