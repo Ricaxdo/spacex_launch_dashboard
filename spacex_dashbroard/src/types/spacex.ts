@@ -42,7 +42,7 @@ export interface SimplifiedLaunch {
 
 export interface LaunchFilters {
   rocket?: string;
-  success?: boolean;
+  success: boolean | null | undefined;
   search?: string;
   startDate?: string;
   endDate?: string;
@@ -80,4 +80,39 @@ export interface MainContentProps {
   setPage: (page: number) => void;
   totalDocs: number;
   onFeedback?: (msg: string) => void;
+}
+
+export interface HeaderProps {
+  filters: {
+    rocket: string;
+    success: boolean | undefined;
+    search: string;
+    startDate: string;
+    endDate: string;
+  };
+  setFilters: Dispatch<
+    SetStateAction<{
+      rocket: string;
+      success: boolean | undefined;
+      search: string;
+      startDate: string;
+      endDate: string;
+    }>
+  >;
+  filtersData: { rockets: { id: string; name: string }[]; years: number[] };
+  hasFilters: boolean;
+  alwaysShowFilters?: boolean;
+}
+
+export interface Filters {
+  rocket: string;
+  success: boolean | undefined;
+  search: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface SidebarProps {
+  activeView: "launches" | "favorites";
+  setActiveView: (view: "launches" | "favorites") => void;
 }

@@ -1,12 +1,9 @@
-interface SidebarProps {
-  activeView: "launches" | "favorites";
-  setActiveView: (view: "launches" | "favorites") => void;
-}
+import { SidebarProps } from "../types/spacex";
 
 export function Sidebar({ activeView, setActiveView }: SidebarProps) {
   return (
     <aside className="bg-gray-200 shadow flex flex-col col-span-5 row-span-1 md:col-span-1 md:row-span-3 lg:py-8 md:py-4 p-2">
-      <nav className="flex flex-col gap-2 px-4 text-gray-700 text-sm m:text-xl">
+      <nav className="flex flex-col gap-2 px-4 text-gray-700 text-sm lg:text-xl">
         <button
           onClick={() => setActiveView("launches")}
           className={`p-2 rounded-xl text-center md:text-left ${
